@@ -1,0 +1,62 @@
+name: Auto Build and Release APK
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers the compilation and release when a tag starting with 'v' is pushed (e.g. v1.0.1)
+  workflow_dispatch: # Allows you to manually trigger a build directly from the GitHub Actions web interface
+
+permissions:
+  contents: write # Allows the automated runner to create releases and upload build files
+
+jobs:
+  build:
+    name: Compile and Publish Android App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java Development Kit (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Gradle Wrapper
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant Execute Permissions to Gradle Wrapper
+        run: chmod +x gradlew
+
+      - name: Compile Debug APK
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Verify Build Outputs
+        run: |
+          echo "Finding all compiled APKs:"
+          find app/build/outputs/apk/ -name "*.apk"
+
+      - name: Create Automatic GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Version ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: app/build/outputs/apk/debug/app-debug.apk
+          body: |
+            ## Automated Release v${{ github.ref_name }}
+            
+            This update was compiled and published automatically via GitHub Actions!
+            
+            ### 📥 Download & Install
+            1. Expand the **Assets** dropdown below.
+            2. Download **`app-debug.apk`** to your Android phone.
+            3. Open the downloaded file to install/update the app.
+            
+            ### 📝 Changes in this release
+            - ${{ github.event.head_commit.message || 'Improvements and stability updates.' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
