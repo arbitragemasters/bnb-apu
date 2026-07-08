@@ -210,7 +210,7 @@ fun AssetsScreen(
                 .fillMaxWidth()
                 .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(22.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             topTabs.forEach { tabName ->
@@ -218,8 +218,8 @@ fun AssetsScreen(
                 Text(
                     text = tabName,
                     color = if (isSelected) Color.White else BinanceTextSecondary,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                    fontSize = if (isSelected) 15.sp else 13.sp,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                    fontSize = 14.sp,
                     maxLines = 1,
                     softWrap = false,
                     modifier = Modifier.clickable { selectedTopTab = tabName }
@@ -591,39 +591,61 @@ fun AssetsScreen(
                     Triple("Futures", futuresTotalUsdt, isHideBalances)
                 )
                 items(accountsList) { (name, total, hide) ->
+                    val formattedUsdt = if (hide) {
+                        "******"
+                    } else if (total == 0.0) {
+                        "0.00 USDT"
+                    } else if (total < 1.0) {
+                        "${formatWithCommas(total, maxDecimals = 8, minDecimals = 2)} USDT"
+                    } else {
+                        "${formatWithCommas(total, maxDecimals = 2, minDecimals = 2)} USDT"
+                    }
+
+                    val formattedEquivalent = if (hide) {
+                        "******"
+                    } else if (total == 0.0) {
+                        null
+                    } else if (total < 1.0) {
+                        "≈ $${formatWithCommas(total, maxDecimals = 8, minDecimals = 2)}"
+                    } else {
+                        "≈ $${formatWithCommas(total, maxDecimals = 2, minDecimals = 2)}"
+                    }
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 14.dp)
+                            .padding(vertical = 6.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.Top
                         ) {
                             Text(
                                 text = name,
                                 color = BinanceTextPrimary,
                                 fontWeight = FontWeight.Medium,
-                                fontSize = 16.sp
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(top = 1.dp) // Align slightly with text on right
                             )
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
-                                    text = if (hide) "******" else "${formatWithCommas(total, maxDecimals = 2, minDecimals = 2)} USDT",
+                                    text = formattedUsdt,
                                     color = BinanceTextPrimary,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 16.sp
                                 )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = if (hide) "******" else "≈ $${formatWithCommas(total, maxDecimals = 2, minDecimals = 2)}",
-                                    color = BinanceTextSecondary,
-                                    fontSize = 12.sp
-                                )
+                                if (formattedEquivalent != null) {
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = formattedEquivalent,
+                                        color = BinanceTextSecondary,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Normal
+                                    )
+                                }
                             }
                         }
-                        Spacer(modifier = Modifier.height(14.dp))
-                        HorizontalDivider(color = BinanceDivider.copy(alpha = 0.3f), thickness = 0.5.dp)
                     }
                 }
                 item {
