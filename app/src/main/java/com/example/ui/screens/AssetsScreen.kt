@@ -46,7 +46,10 @@ fun AssetsScreen(
     viewModel: CryptoViewModel,
     onNavigateToDeposit: () -> Unit,
     onNavigateToWithdrawal: () -> Unit,
-    onNavigateToTrade: (String) -> Unit
+    onNavigateToTrade: (String) -> Unit,
+    currentVersionName: String = "1.0",
+    isCheckingUpdates: Boolean = false,
+    onCheckForUpdates: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val assets by viewModel.walletAssets.collectAsState()
@@ -610,6 +613,68 @@ fun AssetsScreen(
                         }
                         Spacer(modifier = Modifier.height(14.dp))
                         HorizontalDivider(color = BinanceDivider.copy(alpha = 0.3f), thickness = 0.5.dp)
+                    }
+                }
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (!isCheckingUpdates && onCheckForUpdates != null) {
+                                    onCheckForUpdates()
+                                }
+                            },
+                        colors = CardDefaults.cardColors(containerColor = BinanceDarkSurface),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(0.5.dp, BinanceDivider)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.SystemUpdate,
+                                    contentDescription = "System Update",
+                                    tint = BinanceGold,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Column {
+                                    Text(
+                                        text = if (isCheckingUpdates) "Checking for Updates..." else "System Update & Check",
+                                        color = BinanceTextPrimary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp
+                                    )
+                                    Text(
+                                        text = "Current Version: v$currentVersionName",
+                                        color = BinanceTextSecondary,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                            if (isCheckingUpdates) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    color = BinanceGold,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronRight,
+                                    contentDescription = "Go",
+                                    tint = BinanceTextSecondary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
                     }
                 }
             } else {

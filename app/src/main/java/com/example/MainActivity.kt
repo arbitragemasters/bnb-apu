@@ -44,6 +44,21 @@ import com.example.ui.screens.ScanScreen
 import com.example.ui.screens.WithdrawalScreen
 import com.example.ui.theme.*
 
+import java.net.HttpURLConnection
+import java.net.URL
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+import android.content.Context
+import androidx.core.content.FileProvider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
+import android.content.Intent
+import android.net.Uri
+
 import androidx.compose.ui.res.painterResource
 
 class MainActivity : ComponentActivity() {
@@ -68,6 +83,87 @@ fun MainAppContainer() {
 
     // Overlay dialog state for Smiley Face helper
     var showSmileyTip by remember { mutableStateOf(false) }
+
+    // Update Checker States
+    val coroutineScope = rememberCoroutineScope()
+    var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
+    var showUpdateDialog by remember { mutableStateOf(false) }
+    var isCheckingUpdates by remember { mutableStateOf(false) }
+    var downloadProgress by remember { mutableStateOf<Float?>(null) }
+    var downloadStatusText by remember { mutableStateOf("") }
+
+    val currentVersionName = remember {
+        try {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0"
+        } catch (e: Exception) {
+            "1.0"
+        }
+    }
+
+    // Function to download and trigger installation
+    val handleDownloadAndInstall = { url: String ->
+        downloadProgress = 0f
+        downloadStatusText = "Connecting..."
+        coroutineScope.launch {
+            try {
+                val apkFile = File(context.externalCacheDir ?: context.cacheDir, "update.apk")
+                if (apkFile.exists()) {
+                    apkFile.delete()
+                }
+                
+                val success = downloadApk(url, apkFile) { progress ->
+                    downloadProgress = progress
+                    downloadStatusText = "Downloading update: ${(progress * 100).toInt()}%"
+                }
+                
+                if (success && apkFile.exists()) {
+                    downloadStatusText = "Opening installer..."
+                    downloadProgress = null
+                    installApk(context, apkFile)
+                } else {
+                    downloadProgress = null
+                    Toast.makeText(context, "Download failed. Opening in browser...", Toast.LENGTH_LONG).show()
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Could not open link", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                downloadProgress = null
+                Toast.makeText(context, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    // Function to run the check
+    val runUpdateCheck = {
+        if (!isCheckingUpdates) {
+            isCheckingUpdates = true
+            coroutineScope.launch {
+                val info = checkForUpdates(currentVersionName)
+                isCheckingUpdates = false
+                updateInfo = info
+                if (info.hasUpdate) {
+                    showUpdateDialog = true
+                } else {
+                    Toast.makeText(context, "Your app is up to date! (v$currentVersionName)", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    // Auto-check for updates on launch
+    LaunchedEffect(Unit) {
+        isCheckingUpdates = true
+        val info = checkForUpdates(currentVersionName)
+        isCheckingUpdates = false
+        if (info.hasUpdate) {
+            updateInfo = info
+            showUpdateDialog = true
+        }
+    }
 
     // Secondary sub-screen routes (like direct full-screen withdrawal or deposit)
     var isWithdrawalFullFlow by remember { mutableStateOf(false) }
@@ -183,7 +279,10 @@ fun MainAppContainer() {
                                     viewModel.selectPair(pair)
                                     viewModel.showTradingView.value = true
                                     activeTab = "Home"
-                                }
+                                },
+                                currentVersionName = currentVersionName,
+                                isCheckingUpdates = isCheckingUpdates,
+                                onCheckForUpdates = runUpdateCheck
                             )
                         }
                     }
@@ -227,6 +326,151 @@ fun MainAppContainer() {
                             Text("Excellent, Thanks!", fontWeight = FontWeight.Bold)
                         }
                     }
+                )
+            }
+
+            // Update Check Dialog Overlay
+            if (showUpdateDialog && updateInfo != null) {
+                val info = updateInfo!!
+                AlertDialog(
+                    onDismissRequest = { showUpdateDialog = false },
+                    containerColor = BinanceDarkSurface,
+                    shape = RoundedCornerShape(16.dp),
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.SystemUpdate,
+                                contentDescription = "Update Available",
+                                tint = BinanceGold,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Text(
+                                text = "New Version Available!",
+                                color = BinanceTextPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                        }
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text(
+                                text = "A new version of the app (${info.latestVersion}) has been detected. Updates from your GitHub repository can be downloaded and installed directly.",
+                                color = BinanceTextPrimary,
+                                fontSize = 13.sp
+                            )
+                            
+                            // Changelog/Release Notes box
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 120.dp)
+                                    .background(BinanceDarkBg, shape = RoundedCornerShape(8.dp))
+                                    .border(0.5.dp, BinanceDivider, shape = RoundedCornerShape(8.dp))
+                                    .padding(10.dp)
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "Release Notes:",
+                                        color = BinanceTextSecondary,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = info.changeLog,
+                                        color = BinanceTextPrimary,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                            
+                            Text(
+                                text = "Current version: v$currentVersionName",
+                                color = BinanceTextSecondary,
+                                fontSize = 11.sp
+                            )
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showUpdateDialog = false }
+                        ) {
+                            Text("Later", color = BinanceTextSecondary, fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showUpdateDialog = false
+                                handleDownloadAndInstall(info.downloadUrl)
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BinanceGold,
+                                contentColor = Color.Black
+                            ),
+                            shape = RoundedCornerShape(6.dp)
+                        ) {
+                            Text("Update Now", fontWeight = FontWeight.Bold)
+                        }
+                    }
+                )
+            }
+
+            // Download Progress Dialog Overlay
+            if (downloadProgress != null) {
+                val progressVal = downloadProgress!!
+                AlertDialog(
+                    onDismissRequest = { /* Cannot dismiss during critical update download */ },
+                    containerColor = BinanceDarkSurface,
+                    shape = RoundedCornerShape(16.dp),
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = BinanceGold,
+                                strokeWidth = 2.5.dp
+                            )
+                            Text(
+                                text = "Downloading Update",
+                                color = BinanceTextPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
+                    },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text(
+                                text = downloadStatusText,
+                                color = BinanceTextPrimary,
+                                fontSize = 13.sp
+                            )
+                            
+                            LinearProgressIndicator(
+                                progress = { progressVal },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(4.dp)),
+                                color = BinanceGold,
+                                trackColor = BinanceDivider
+                            )
+                            
+                            Text(
+                                text = "Please wait while the update file is downloaded and installed automatically.",
+                                color = BinanceTextSecondary,
+                                fontSize = 11.sp
+                            )
+                        }
+                    },
+                    confirmButton = {} // Non-interactive loader
                 )
             }
 
@@ -516,3 +760,142 @@ fun BottomBarCustomIcon(name: String, itemColor: Color, isSelected: Boolean) {
         }
     }
 }
+
+// --- APP UPDATER SYSTEM ---
+
+data class UpdateInfo(
+    val hasUpdate: Boolean,
+    val latestVersion: String,
+    val downloadUrl: String,
+    val changeLog: String
+)
+
+suspend fun checkForUpdates(currentVersion: String): UpdateInfo = withContext(Dispatchers.IO) {
+    try {
+        val url = URL("https://api.github.com/repos/arbitragemasters/bnb-apu/releases/latest")
+        val connection = url.openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0")
+        connection.connectTimeout = 8000
+        connection.readTimeout = 8000
+        
+        if (connection.responseCode == 200) {
+            val reader = BufferedReader(InputStreamReader(connection.inputStream))
+            val response = StringBuilder()
+            var line: String?
+            while (reader.readLine().also { line = it } != null) {
+                response.append(line)
+            }
+            reader.close()
+            
+            val json = response.toString()
+            
+            // Extracts tag_name, html_url, body from JSON
+            val tagName = extractJsonValue(json, "tag_name")
+            val htmlUrl = extractJsonValue(json, "html_url")
+            val body = extractJsonValue(json, "body")
+            
+            // Check if there's a direct APK in assets
+            val directApkUrl = extractJsonValue(json, "browser_download_url")
+            val finalDownloadUrl = if (directApkUrl.isNotEmpty()) directApkUrl else if (htmlUrl.isNotEmpty()) htmlUrl else "https://github.com/arbitragemasters/bnb-apu/releases"
+            
+            // Normalize versions (remove 'v' prefix, spaces, and trim)
+            val cleanCurrent = currentVersion.removePrefix("v").trim()
+            val cleanLatest = tagName.removePrefix("v").trim()
+            
+            // Determine if update is available
+            val hasUpdate = cleanLatest.isNotEmpty() && cleanLatest != cleanCurrent
+            
+            UpdateInfo(
+                hasUpdate = hasUpdate,
+                latestVersion = tagName.ifEmpty { "v$cleanLatest" },
+                downloadUrl = finalDownloadUrl,
+                changeLog = body.ifEmpty { "Bug fixes and stability improvements." }
+            )
+        } else {
+            UpdateInfo(false, "", "", "")
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        UpdateInfo(false, "", "", "")
+    }
+}
+
+fun extractJsonValue(json: String, key: String): String {
+    val pattern = "\"$key\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+    val match = pattern.find(json)
+    return match?.groupValues?.get(1) ?: ""
+}
+
+suspend fun downloadApk(
+    downloadUrl: String,
+    destinationFile: File,
+    onProgress: (Float) -> Unit
+): Boolean = withContext(Dispatchers.IO) {
+    var inputStream: InputStream? = null
+    var outputStream: FileOutputStream? = null
+    try {
+        val url = URL(downloadUrl)
+        val connection = url.openConnection() as HttpURLConnection
+        connection.connectTimeout = 15000
+        connection.readTimeout = 15000
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0")
+        connection.connect()
+        
+        if (connection.responseCode in 200..299) {
+            val fileLength = connection.contentLength
+            inputStream = connection.inputStream
+            outputStream = FileOutputStream(destinationFile)
+            
+            val data = ByteArray(4096)
+            var total: Long = 0
+            var count: Int
+            while (inputStream.read(data).also { count = it } != -1) {
+                total += count
+                if (fileLength > 0) {
+                    onProgress(total.toFloat() / fileLength.toFloat())
+                }
+                outputStream.write(data, 0, count)
+            }
+            outputStream.flush()
+            true
+        } else {
+            false
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        false
+    } finally {
+        try { inputStream?.close() } catch (e: Exception) {}
+        try { outputStream?.close() } catch (e: Exception) {}
+    }
+}
+
+fun installApk(context: Context, apkFile: File) {
+    try {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                apkFile
+            )
+            setDataAndType(uri, "application/vnd.android.package-archive")
+        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        // If modern direct file sharing fails, fallback to direct intent for older versions
+        try {
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive")
+            }
+            context.startActivity(intent)
+        } catch (e2: Exception) {
+            e2.printStackTrace()
+            Toast.makeText(context, "Installation trigger failed. Please launch APK manually from files.", Toast.LENGTH_LONG).show()
+        }
+    }
+}
+
