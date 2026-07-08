@@ -40,12 +40,12 @@ class CryptoRepository(private val context: Context) {
 
     // --- Base Asset Prices for Fallback ---
     private val basePrices = mapOf(
-        "BTCUSDT" to 92500.0,
-        "ETHUSDT" to 3450.0,
-        "SOLUSDT" to 195.0,
-        "BNBUSDT" to 615.0,
-        "ADAUSDT" to 0.58,
-        "DOGEUSDT" to 0.22
+        "BTCUSDT" to 63741.00,
+        "ETHUSDT" to 1792.00,
+        "SOLUSDT" to 145.0,
+        "BNBUSDT" to 577.80,
+        "ADAUSDT" to 0.45,
+        "DOGEUSDT" to 0.11
     )
 
     // Cached prices to support realistic step-fluctuations when fallback is active
@@ -65,24 +65,28 @@ class CryptoRepository(private val context: Context) {
         val existingAssets = walletDao.getAllAssets()
         if (existingAssets.isEmpty()) {
             val initialAssets = listOf(
-                WalletAsset("USDT", "Tether", 1517.4567, 0.0, spotBalance = 1067.4567, fundingBalance = 450.0, earnBalance = 200.0, futuresBalance = 67.0),
+                WalletAsset("USDT", "Tether", 0.0, 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0),
                 WalletAsset("BTC", "Bitcoin", 0.00000001, 0.0, spotBalance = 0.00000001, fundingBalance = 0.0, earnBalance = 0.00000002),
                 WalletAsset("ACT", "Act I : The AI Prophecy", 0.04, 0.0, spotBalance = 0.04, fundingBalance = 0.0, earnBalance = 0.0),
                 WalletAsset("ETH", "Ethereum", 0.00000002, 0.0, spotBalance = 0.00000002, fundingBalance = 0.0, earnBalance = 0.0),
-                WalletAsset("SOL", "Solana", 2.0, 0.0, spotBalance = 1.5, fundingBalance = 0.5, earnBalance = 0.0),
-                WalletAsset("BNB", "BNB", 0.3, 0.0, spotBalance = 0.2, fundingBalance = 0.1, earnBalance = 0.0),
-                WalletAsset("ADA", "Cardano", 10.0, 0.0, spotBalance = 6.0, fundingBalance = 4.0, earnBalance = 0.0),
-                WalletAsset("DOGE", "Dogecoin", 150.0, 0.0, spotBalance = 100.0, fundingBalance = 50.0, earnBalance = 0.0)
+                WalletAsset("SOL", "Solana", 0.0, 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0),
+                WalletAsset("BNB", "BNB", 0.0, 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0),
+                WalletAsset("ADA", "Cardano", 0.0, 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0),
+                WalletAsset("DOGE", "Dogecoin", 0.0, 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0)
             )
             walletDao.insertAssets(initialAssets)
         } else {
             // Update all existing balances to guarantee consistency across database upgrades and ensure exact totals matching requirements!
             val updatedAssets = existingAssets.map { asset ->
                 when (asset.coinSymbol) {
-                    "USDT" -> asset.copy(balance = 1517.4567, spotBalance = 1067.4567, fundingBalance = 450.0, earnBalance = 200.0, futuresBalance = 67.0)
-                    "BTC" -> asset.copy(balance = 0.00000001, spotBalance = 0.00000001, fundingBalance = 0.0)
-                    "ACT" -> asset.copy(balance = 0.04, spotBalance = 0.04, fundingBalance = 0.0)
-                    "ETH" -> asset.copy(balance = 0.00000002, spotBalance = 0.00000002, fundingBalance = 0.0)
+                    "USDT" -> asset.copy(balance = 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
+                    "BTC" -> asset.copy(balance = 0.00000001, spotBalance = 0.00000001, fundingBalance = 0.0, earnBalance = 0.00000002)
+                    "ACT" -> asset.copy(balance = 0.04, spotBalance = 0.04, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
+                    "ETH" -> asset.copy(balance = 0.00000002, spotBalance = 0.00000002, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
+                    "SOL" -> asset.copy(balance = 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
+                    "BNB" -> asset.copy(balance = 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
+                    "ADA" -> asset.copy(balance = 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
+                    "DOGE" -> asset.copy(balance = 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
                     else -> asset
                 }
             }

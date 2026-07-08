@@ -968,7 +968,7 @@ fun HomeLandingView(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(
                     modifier = Modifier.clickable { viewModel.toggleHideBalances() }
@@ -979,21 +979,33 @@ fun HomeLandingView(
                     ) {
                         Text("Est. Total Value(USDT)", color = BinanceTextSecondary, fontSize = 12.sp)
                         Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Dropdown",
+                            imageVector = Icons.Filled.ArrowDropUp,
+                            contentDescription = "Up",
                             tint = BinanceTextSecondary,
                             modifier = Modifier.size(14.dp)
                         )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = if (isHideBalances) "******" else formatWithCommas(totalBalanceUsdt, maxDecimals = 2, minDecimals = 2),
+                        text = if (isHideBalances) "******" else {
+                            if (totalBalanceUsdt < 1.0) {
+                                formatWithCommas(totalBalanceUsdt, maxDecimals = 8, minDecimals = 7)
+                            } else {
+                                formatWithCommas(totalBalanceUsdt, maxDecimals = 2, minDecimals = 2)
+                            }
+                        },
                         color = BinanceTextPrimary,
-                        fontSize = 28.sp,
+                        fontSize = 32.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = if (isHideBalances) "******" else "≈$${formatWithCommas(totalBalanceUsdt, maxDecimals = 2, minDecimals = 2)}",
+                        text = if (isHideBalances) "******" else {
+                            if (totalBalanceUsdt < 1.0) {
+                                "≈$${formatWithCommas(totalBalanceUsdt, maxDecimals = 8, minDecimals = 7)}"
+                            } else {
+                                "≈$${formatWithCommas(totalBalanceUsdt, maxDecimals = 2, minDecimals = 2)}"
+                            }
+                        },
                         color = BinanceTextSecondary,
                         fontSize = 12.sp
                     )

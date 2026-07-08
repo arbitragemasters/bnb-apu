@@ -302,7 +302,11 @@ fun AssetsScreen(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         val usdtStr = if (isHideBalances) "********" else {
-                            formatWithCommas(totalBalanceUsdt, maxDecimals = 2, minDecimals = 2)
+                            if (totalBalanceUsdt < 1.0) {
+                                formatWithCommas(totalBalanceUsdt, maxDecimals = 8, minDecimals = 8)
+                            } else {
+                                formatWithCommas(totalBalanceUsdt, maxDecimals = 2, minDecimals = 2)
+                            }
                         }
                         Text(
                             text = usdtStr,
@@ -359,9 +363,16 @@ fun AssetsScreen(
                         )
                         Text(
                             text = if (isHideBalances) "****" else {
-                                val pnlVal = totalBalanceUsdt * -0.0056312278
-                                val formattedPnl = formatWithCommas(pnlVal, maxDecimals = 2, minDecimals = 2)
-                                "${formattedPnl} USDT(-0.56%)"
+                                if (totalBalanceUsdt < 1.0) {
+                                    val pnlVal = -0.00000018
+                                    val pnlPercent = -0.02
+                                    val formattedPnl = formatWithCommas(pnlVal, maxDecimals = 8, minDecimals = 8)
+                                    "${formattedPnl} USDT(${pnlPercent}%)"
+                                } else {
+                                    val pnlVal = totalBalanceUsdt * -0.0056
+                                    val formattedPnl = formatWithCommas(pnlVal, maxDecimals = 2, minDecimals = 2)
+                                    "${formattedPnl} USDT(-0.56%)"
+                                }
                             },
                             color = BinanceRed,
                             fontSize = 12.sp,
