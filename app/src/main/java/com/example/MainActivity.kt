@@ -480,55 +480,60 @@ fun MainAppContainer() {
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(bottom = 16.dp)
-                        .offset(x = 20.dp) // shift right to cut off, as requested
-                        .size(48.dp)
+                        .offset(x = 10.dp) // shift right to cut off naturally without losing face size
+                        .size(40.dp)
                         .clickable { showSmileyTip = true },
                     contentAlignment = Alignment.Center
                 ) {
-                    // Rotated Diamond Background with dark outline matching the user's screenshot
+                    // Rotated Diamond Background with gold-to-orange gradient and dark outline matching the user's screenshot
                     Box(
                         modifier = Modifier
-                            .size(34.dp)
+                            .size(28.dp)
                             .graphicsLayer { rotationZ = 45f }
                             .background(
-                                color = Color(0xFFFCD535), // Solid golden-yellow background
-                                shape = RoundedCornerShape(8.dp)
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color(0xFFFFF047), // Bright golden-yellow
+                                        Color(0xFFEF8F10)  // Warm rich orange
+                                    )
+                                ),
+                                shape = RoundedCornerShape(7.dp)
                             )
                             .border(
-                                width = 1.5.dp,
-                                color = Color(0xFF1E2026), // Thin dark outline matching the screenshot
-                                shape = RoundedCornerShape(8.dp)
+                                width = 1.2.dp,
+                                color = Color(0xFF1E2026), // Sharp dark outline
+                                shape = RoundedCornerShape(7.dp)
                             )
                     )
 
                     // Unrotated, perfectly aligned upright face overlay
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                        verticalArrangement = Arrangement.spacedBy(1.5.dp)
                     ) {
                         // Smiley eyes
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.5.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Left eye
                             Box(
                                 modifier = Modifier
-                                    .size(width = 2.5.dp, height = 7.dp)
-                                    .background(Color(0xFF1E2026), shape = RoundedCornerShape(1.dp))
+                                    .size(width = 2.dp, height = 5.5.dp)
+                                    .background(Color(0xFF1E2026), shape = RoundedCornerShape(0.8.dp))
                             )
                             // Right eye
                             Box(
                                 modifier = Modifier
-                                    .size(width = 2.5.dp, height = 7.dp)
-                                    .background(Color(0xFF1E2026), shape = RoundedCornerShape(1.dp))
+                                    .size(width = 2.dp, height = 5.5.dp)
+                                    .background(Color(0xFF1E2026), shape = RoundedCornerShape(0.8.dp))
                             )
                         }
 
                         // Smiling mouth
                         Canvas(
                             modifier = Modifier
-                                .size(width = 10.dp, height = 5.dp)
+                                .size(width = 8.dp, height = 4.dp)
                         ) {
                             drawArc(
                                 color = Color(0xFF1E2026),
