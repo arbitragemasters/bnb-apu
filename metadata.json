@@ -1,0 +1,6 @@
+{
+  "name": "Binance",
+  "description": "A high-fidelity Binance replica with real-time crypto charts, full simulated withdrawal flows, custom order book, and complete wallet balance tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
