@@ -75,22 +75,6 @@ class CryptoRepository(private val context: Context) {
                 WalletAsset("DOGE", "Dogecoin", 0.0, 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0)
             )
             walletDao.insertAssets(initialAssets)
-        } else {
-            // Update all existing balances to guarantee consistency across database upgrades and ensure exact totals matching requirements!
-            val updatedAssets = existingAssets.map { asset ->
-                when (asset.coinSymbol) {
-                    "USDT" -> asset.copy(balance = 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
-                    "BTC" -> asset.copy(balance = 0.00000001, spotBalance = 0.00000001, fundingBalance = 0.0, earnBalance = 0.00000002)
-                    "ACT" -> asset.copy(balance = 0.04, spotBalance = 0.04, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
-                    "ETH" -> asset.copy(balance = 0.00000002, spotBalance = 0.00000002, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
-                    "SOL" -> asset.copy(balance = 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
-                    "BNB" -> asset.copy(balance = 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
-                    "ADA" -> asset.copy(balance = 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
-                    "DOGE" -> asset.copy(balance = 0.0, spotBalance = 0.0, fundingBalance = 0.0, earnBalance = 0.0, futuresBalance = 0.0)
-                    else -> asset
-                }
-            }
-            walletDao.insertAssets(updatedAssets)
         }
     }
 
@@ -215,8 +199,8 @@ class CryptoRepository(private val context: Context) {
         tradePrice: Double,
         tradeAmount: Double // in base crypto amount, e.g. 0.05 BTC
     ): String = withContext(Dispatchers.IO) {
-        val baseSymbol = pair.substring(0, pair.length - 4) // "BTC"
-        val quoteSymbol = pair.substring(pair.length - 4)  // "USDT"
+        val baseSymbol = if (pair.length >= 4) pair.substring(0, pair.length - 4) else pair
+        val quoteSymbol = if (pair.length >= 4) pair.substring(pair.length - 4) else "USDT"
 
         val totalQuoteCost = tradePrice * tradeAmount
 

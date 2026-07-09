@@ -73,13 +73,23 @@ fun CryptoIcon(
         "USDT" -> Brush.verticalGradient(
             colors = listOf(Color(0xFF3AC79E), Color(0xFF1B8465)) // Real Tether Emerald Gradient
         )
+        "SOL" -> Brush.verticalGradient(
+            colors = listOf(Color(0xFF1A1A2E), Color(0xFF140F26)) // Sleek Solana Dark Gradient
+        )
+        "DOGE" -> Brush.verticalGradient(
+            colors = listOf(Color(0xFFF3C032), Color(0xFFC29718)) // Real Dogecoin Gold Gradient
+        )
+        "ADA" -> Brush.verticalGradient(
+            colors = listOf(Color(0xFF0033AD), Color(0xFF002275)) // Real Cardano Blue Gradient
+        )
+        "ACT" -> Brush.verticalGradient(
+            colors = listOf(Color(0xFF7B2CBF), Color(0xFF3C096C)) // Neon purple AI prophecy gradient
+        )
         else -> null
     }
 
     val backgroundColor = when (symbol) {
-        "ACT" -> Color(0xFF181A20) // Slate-dark base matching its avatar frame
         "UAH" -> Color.Transparent
-        "SOL", "DOGE", "ADA" -> Color.Transparent // Transparent so that downloaded circular high-fidelity logos render flawlessly
         else -> Color(0xFF2B3139)
     }
 
@@ -159,36 +169,123 @@ fun CryptoIcon(
                 )
             }
             "SOL" -> {
-                Image(
-                    painter = painterResource(id = R.drawable.img_sol_logo),
-                    contentDescription = "Solana Logo",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
+                Canvas(modifier = Modifier.fillMaxSize(0.65f)) {
+                    val w = this.size.width
+                    val h = this.size.height
+                    
+                    val brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFF14F195), Color(0xFF9945FF)),
+                        start = Offset(0f, 0f),
+                        end = Offset(w, h)
+                    )
+                    
+                    // Draw the three polygons representing Solana logo
+                    // Top polygon
+                    val p1 = Path().apply {
+                        moveTo(w * 0.15f, h * 0.15f)
+                        lineTo(w * 0.85f, h * 0.15f)
+                        lineTo(w * 0.70f, h * 0.35f)
+                        lineTo(w * 0.00f, h * 0.35f)
+                        close()
+                    }
+                    drawPath(p1, brush)
+                    
+                    // Middle polygon
+                    val p2 = Path().apply {
+                        moveTo(w * 0.30f, h * 0.40f)
+                        lineTo(w * 1.00f, h * 0.40f)
+                        lineTo(w * 0.85f, h * 0.60f)
+                        lineTo(w * 0.15f, h * 0.60f)
+                        close()
+                    }
+                    drawPath(p2, brush)
+                    
+                    // Bottom polygon
+                    val p3 = Path().apply {
+                        moveTo(w * 0.00f, h * 0.65f)
+                        lineTo(w * 0.70f, h * 0.65f)
+                        lineTo(w * 0.85f, h * 0.85f)
+                        lineTo(w * 0.15f, h * 0.85f)
+                        close()
+                    }
+                    drawPath(p3, brush)
+                }
             }
             "DOGE" -> {
-                Image(
-                    painter = painterResource(id = R.drawable.img_doge_logo),
-                    contentDescription = "Dogecoin Logo",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
+                Text(
+                    text = "Ð",
+                    color = Color.White,
+                    fontSize = (size.value * 0.62).sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
             "ACT" -> {
-                Image(
-                    painter = painterResource(id = R.drawable.img_act_logo_1783363729963),
-                    contentDescription = "ACT Logo",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+                Canvas(modifier = Modifier.fillMaxSize(0.60f)) {
+                    val cx = this.size.width / 2f
+                    val cy = this.size.height / 2f
+                    val w = this.size.width
+                    val h = this.size.height
+                    
+                    // Draw a futuristic stylized 'A' network
+                    val top = Offset(cx, h * 0.15f)
+                    val bottomLeft = Offset(w * 0.20f, h * 0.85f)
+                    val bottomRight = Offset(w * 0.80f, h * 0.85f)
+                    val midLeft = Offset(w * 0.35f, h * 0.55f)
+                    val midRight = Offset(w * 0.65f, h * 0.55f)
+                    
+                    // Connection lines
+                    drawLine(color = Color.White.copy(alpha = 0.5f), start = top, end = bottomLeft, strokeWidth = 3f)
+                    drawLine(color = Color.White.copy(alpha = 0.5f), start = top, end = bottomRight, strokeWidth = 3f)
+                    drawLine(color = Color.White.copy(alpha = 0.5f), start = midLeft, end = midRight, strokeWidth = 3f)
+                    
+                    // Draw nodes at intersections
+                    drawCircle(color = Color(0xFF14F195), radius = w * 0.08f, center = top) // glowing green node
+                    drawCircle(color = Color(0xFF9945FF), radius = w * 0.08f, center = bottomLeft) // purple node
+                    drawCircle(color = Color(0xFF00C0FF), radius = w * 0.08f, center = bottomRight) // cyan node
+                    drawCircle(color = Color.White, radius = w * 0.05f, center = midLeft)
+                    drawCircle(color = Color.White, radius = w * 0.05f, center = midRight)
+                }
             }
             "ADA" -> {
-                Image(
-                    painter = painterResource(id = R.drawable.img_ada_logo),
-                    contentDescription = "Cardano Logo",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
+                Canvas(modifier = Modifier.fillMaxSize(0.65f)) {
+                    val cx = this.size.width / 2f
+                    val cy = this.size.height / 2f
+                    val w = this.size.width
+                    val h = this.size.height
+                    
+                    // Inner circle: 6 large dots
+                    val rInner = w * 0.18f
+                    for (i in 0 until 6) {
+                        val angle = (i * 2 * Math.PI / 6).toFloat()
+                        drawCircle(
+                            color = Color.White,
+                            radius = w * 0.08f,
+                            center = Offset(cx + rInner * kotlin.math.cos(angle), cy + rInner * kotlin.math.sin(angle))
+                        )
+                    }
+                    
+                    // Middle circle: 12 medium dots
+                    val rMid = w * 0.32f
+                    for (i in 0 until 12) {
+                        val angle = (i * 2 * Math.PI / 12 + Math.PI / 12).toFloat()
+                        drawCircle(
+                            color = Color.White,
+                            radius = w * 0.05f,
+                            center = Offset(cx + rMid * kotlin.math.cos(angle), cy + rMid * kotlin.math.sin(angle))
+                        )
+                    }
+                    
+                    // Outer circle: 6 small dots
+                    val rOuter = w * 0.45f
+                    for (i in 0 until 6) {
+                        val angle = (i * 2 * Math.PI / 6 + Math.PI / 6).toFloat()
+                        drawCircle(
+                            color = Color.White,
+                            radius = w * 0.03f,
+                            center = Offset(cx + rOuter * kotlin.math.cos(angle), cy + rOuter * kotlin.math.sin(angle))
+                        )
+                    }
+                }
             }
             "UAH" -> {
                 Canvas(modifier = Modifier.fillMaxSize()) {

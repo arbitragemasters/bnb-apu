@@ -96,7 +96,7 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val base = selectedPair.substring(0, selectedPair.length - 4)
+                val base = if (selectedPair.length >= 4) selectedPair.substring(0, selectedPair.length - 4) else selectedPair
                 CryptoIcon(symbol = base, size = 28.dp)
                 
                 Column {
@@ -171,7 +171,7 @@ fun HomeScreen(
             items(viewModel.cryptoPairs) { pair ->
                 val ticker = tickers[pair]
                 val isSelected = pair == selectedPair
-                val baseSym = pair.substring(0, pair.length - 4)
+                val baseSym = if (pair.length >= 4) pair.substring(0, pair.length - 4) else pair
 
                 Card(
                     modifier = Modifier
@@ -434,7 +434,7 @@ fun HomeScreen(
                         }
 
                         // Amount Input Field
-                        val baseSymbol = selectedPair.substring(0, selectedPair.length - 4)
+                        val baseSymbol = if (selectedPair.length >= 4) selectedPair.substring(0, selectedPair.length - 4) else selectedPair
                         TextField(
                             value = tradeAmountInput,
                             onValueChange = { tradeAmountInput = it },
@@ -787,6 +787,7 @@ fun HomeLandingView(
 ) {
     val context = LocalContext.current
     var activeExchangeTab by remember { mutableStateOf("Exchange") } // Exchange vs Wallet
+    var bannerSlideIndex by remember { mutableStateOf(0) }
     
     // Dynamic portfolio balance calculation
     val totalBalanceUsdt = remember(walletAssets, tickers) {
@@ -951,7 +952,7 @@ fun HomeLandingView(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text("🔥", fontSize = 12.sp)
-                    Text("CBRSB top gainer", color = BinanceTextSecondary, fontSize = 12.sp)
+                    Text("POL hot search", color = BinanceTextSecondary, fontSize = 12.sp)
                 }
                 Icon(
                     imageVector = Icons.Filled.Search,
@@ -1048,7 +1049,7 @@ fun HomeLandingView(
             }
         }
 
-        // 4. Promotional Banner (bStocks Trading Carnival)
+        // 4. Promotional Banner (bStocks Trading Carnival / Trading Countdown Carousel)
         item {
             Spacer(modifier = Modifier.height(16.dp))
             Card(
@@ -1059,75 +1060,173 @@ fun HomeLandingView(
                 Column(
                     modifier = Modifier.padding(12.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "bStocks Trading Carnival",
-                            color = BinanceTextSecondary,
-                            fontSize = 12.sp
-                        )
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = "Close",
-                            tint = BinanceTextSecondary,
-                            modifier = Modifier.size(14.dp).clickable {
-                                Toast.makeText(context, "Banner dismissed", Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    if (bannerSlideIndex == 0) {
+                        // Slide 0: Trading Countdown (WENUSDT Perp)
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(BinanceGold),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("M", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                            }
                             Text(
-                                text = "Share Up to 100,000 USDT in MUB",
-                                color = BinanceTextPrimary,
-                                fontWeight = FontWeight.Bold,
+                                text = "Trading Countdown",
+                                color = BinanceTextSecondary,
                                 fontSize = 12.sp
                             )
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "Close",
+                                tint = BinanceTextSecondary,
+                                modifier = Modifier.size(14.dp).clickable {
+                                    Toast.makeText(context, "Banner dismissed", Toast.LENGTH_SHORT).show()
+                                }
+                            )
                         }
-                        Button(
-                            onClick = { Toast.makeText(context, "Joined successfully!", Toast.LENGTH_SHORT).show() },
-                            colors = ButtonDefaults.buttonColors(containerColor = BinancePillBg, contentColor = Color.White),
-                            shape = RoundedCornerShape(12.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                            modifier = Modifier.height(26.dp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Join", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                WendysLogo(modifier = Modifier.size(36.dp))
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Text(
+                                            text = "WENUSDT",
+                                            color = BinanceTextPrimary,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
+                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(2.dp))
+                                                .background(Color(0xFF2B3139))
+                                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = "Perp",
+                                                color = BinanceTextSecondary,
+                                                fontSize = 8.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "Starts in 0H : 1M",
+                                        color = BinanceTextSecondary,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                            Button(
+                                onClick = {
+                                    viewModel.selectPair("WENUSDT")
+                                    viewModel.showTradingView.value = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2B3139), contentColor = Color.White),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp),
+                                modifier = Modifier.height(28.dp)
+                            ) {
+                                Text("Trade", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    } else {
+                        // Slide 1: bStocks Trading Carnival
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "bStocks Trading Carnival",
+                                color = BinanceTextSecondary,
+                                fontSize = 12.sp
+                            )
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "Close",
+                                tint = BinanceTextSecondary,
+                                modifier = Modifier.size(14.dp).clickable {
+                                    Toast.makeText(context, "Banner dismissed", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(18.dp))
+                                        .background(BinanceGold),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("M", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                }
+                                Text(
+                                    text = "Share Up to 100,000 USDT in MUB",
+                                    color = BinanceTextPrimary,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp
+                                )
+                            }
+                            Button(
+                                onClick = { Toast.makeText(context, "Joined successfully!", Toast.LENGTH_SHORT).show() },
+                                colors = ButtonDefaults.buttonColors(containerColor = BinancePillBg, contentColor = Color.White),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp),
+                                modifier = Modifier.height(28.dp)
+                            ) {
+                                Text("Join", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // 9 beautiful pager indicator dots with active capsule matching the screenshot exactly!
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        listOf(false, true, false, false).forEach { active ->
-                            Box(
-                                modifier = Modifier
-                                    .padding(horizontal = 2.dp)
-                                    .size(4.dp)
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(if (active) BinanceGold else BinanceTextSecondary.copy(alpha = 0.5f))
-                            )
+                        (0..8).forEach { index ->
+                            // Use index % 2 to alternate active slide
+                            val isActive = (bannerSlideIndex == 0 && index == 3) || (bannerSlideIndex == 1 && index == 4)
+                            if (isActive) {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(horizontal = 2.dp)
+                                        .width(12.dp)
+                                        .height(4.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(Color.White)
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(horizontal = 2.dp)
+                                        .size(4.dp)
+                                        .clip(CircleShape)
+                                        .background(BinanceTextSecondary.copy(alpha = 0.35f))
+                                        .clickable {
+                                            bannerSlideIndex = if (index < 4) 0 else 1
+                                        }
+                                )
+                            }
                         }
                     }
                 }
@@ -1143,12 +1242,12 @@ fun HomeLandingView(
             ) {
                 // Left Card: UAH Card
                 Card(
-                    modifier = Modifier.weight(1f).height(120.dp),
+                    modifier = Modifier.weight(1f).aspectRatio(0.98f),
                     colors = CardDefaults.cardColors(containerColor = BinanceCardBg),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.padding(14.dp),
                         verticalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(
@@ -1156,15 +1255,15 @@ fun HomeLandingView(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                CryptoIcon("UAH", size = 14.dp)
-                                Text("UAH", color = BinanceTextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                CryptoIcon("UAH", size = 18.dp)
+                                Text("UAH", color = BinanceTextSecondary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                             }
                             Box(
                                 modifier = Modifier
                                     .size(4.dp)
                                     .clip(RoundedCornerShape(2.dp))
-                                    .background(BinanceTextSecondary)
+                                    .background(BinanceTextSecondary.copy(alpha = 0.5f))
                             )
                         }
 
@@ -1174,29 +1273,29 @@ fun HomeLandingView(
                                 .background(BinanceGreen.copy(alpha = 0.15f))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
-                            Text("Deposit", color = BinanceGreen, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            Text("Deposit", color = BinanceGreen, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                         }
 
-                        Text("Card (Fiat Trade)", color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Card (Fiat Trade)", color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Filled.People, "Users", tint = BinanceTextSecondary, modifier = Modifier.size(14.dp))
-                            Row {
-                                Box(modifier = Modifier.size(3.dp).clip(RoundedCornerShape(1.5f)).background(BinanceGold))
-                                Spacer(modifier = Modifier.width(2.dp))
-                                Box(modifier = Modifier.size(3.dp).clip(RoundedCornerShape(1.5f)).background(BinanceTextSecondary))
+                            FiatScannerIcon(modifier = Modifier.size(16.dp), color = BinanceTextSecondary)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(modifier = Modifier.width(8.dp).height(3.dp).clip(RoundedCornerShape(1.5.dp)).background(Color.White))
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Box(modifier = Modifier.size(3.dp).clip(CircleShape).background(BinanceTextSecondary.copy(alpha = 0.4f)))
                             }
                         }
                     }
                 }
 
                 // Right Card: BNB Sparkline Card
-                val bnbPrice = tickers["BNBUSDT"]?.lastPrice ?: "577.80"
-                val bnbChange = tickers["BNBUSDT"]?.priceChangePercent ?: "-0.44"
+                val bnbPrice = tickers["BNBUSDT"]?.lastPrice ?: "571.68"
+                val bnbChange = tickers["BNBUSDT"]?.priceChangePercent ?: "+1.04"
                 val isBnbPositive = !bnbChange.startsWith("-")
                 val bnbColor = if (isBnbPositive) BinanceGreen else BinanceRed
                 val bnbSparklinePoints by viewModel.bnbSparklinePoints.collectAsState()
@@ -1219,150 +1318,169 @@ fun HomeLandingView(
                 }
 
                 Card(
-                    modifier = Modifier.weight(1f).height(120.dp),
+                    modifier = Modifier.weight(1f).aspectRatio(0.98f),
                     colors = CardDefaults.cardColors(containerColor = BinanceCardBg),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.padding(14.dp),
                         verticalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            CryptoIcon("BNB", size = 14.dp)
-                            Text("BNB", color = BinanceTextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            CryptoIcon("BNB", size = 18.dp)
+                            Text("BNB", color = BinanceTextSecondary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         }
 
                         Column {
-                            Text(bnbPrice, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                            Text(bnbChangeText, color = bnbColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(bnbPrice, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 21.sp)
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(bnbChangeText, color = bnbColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
 
                         SparklineChart(
                             points = sparklinePoints,
                             color = bnbColor,
-                            modifier = Modifier.fillMaxWidth().height(26.dp)
+                            modifier = Modifier.fillMaxWidth().height(30.dp)
                         )
                     }
                 }
             }
         }
 
-        // 6. Tabs ("New", "Gainers", "Losers", "24h Vol", "Market Cap")
+        // 6. Tabs, Header & Coin Market List directly on screen background
         item {
             Spacer(modifier = Modifier.height(18.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                listOf("New", "Gainers", "Losers", "24h Vol", "Market Cap").forEach { tabName ->
-                    val selected = tabName == "Market Cap"
-                    Text(
-                        text = tabName,
-                        color = if (selected) BinanceTextPrimary else BinanceTextSecondary,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                        fontSize = 12.sp,
-                        modifier = Modifier.clickable {
-                            Toast.makeText(context, "$tabName selected", Toast.LENGTH_SHORT).show()
-                        }
-                    )
-                }
-            }
-        }
-
-        // 7. Table Header ("Crypto", "Name", "Last Price", "Cap / Vol")
-        item {
-            Spacer(modifier = Modifier.height(14.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Crypto", color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            }
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Name", color = BinanceTextSecondary, fontSize = 10.sp, modifier = Modifier.weight(1f))
-                Text("Last Price", color = BinanceTextSecondary, fontSize = 10.sp, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                Text("Cap/ Vol", color = BinanceTextSecondary, fontSize = 10.sp, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-
-        // 8. Crypto Market Rows (BTC, ETH, BNB, SOL, DOGE)
-        val cryptos = listOf(
-            Triple("BTC", "$1.27T", "$36.84B"),
-            Triple("ETH", "$213.85B", "$17.47B"),
-            Triple("BNB", "$77.82B", "$1.33B"),
-            Triple("SOL", "$87.41B", "$4.12B"),
-            Triple("DOGE", "$23.10B", "$1.84B")
-        )
-
-        items(cryptos) { (symbol, cap, vol) ->
-            val ticker = tickers[symbol + "USDT"]
-            val lastPrice = ticker?.lastPrice ?: when (symbol) {
-                "BTC" -> "63,095.81"
-                "ETH" -> "1,770.63"
-                "BNB" -> "577.80"
-                "SOL" -> "195.00"
-                "DOGE" -> "0.1624"
-                else -> "1.00"
-            }
-            val changePercent = ticker?.priceChangePercent ?: when (symbol) {
-                "BTC" -> "+0.39"
-                "ETH" -> "+0.34"
-                "BNB" -> "-0.44"
-                "SOL" -> "+1.25"
-                "DOGE" -> "+3.40"
-                else -> "0.00"
-            }
-            val isPositive = !changePercent.startsWith("-")
-            val percentColor = if (isPositive) BinanceGreen else BinanceRed
-            val percentText = if (isPositive && !changePercent.startsWith("+")) "+$changePercent" else changePercent
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        viewModel.selectPair(symbol + "USDT")
-                        viewModel.showTradingView.value = true
-                    }
-                    .padding(vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Name
+                // Tabs row
                 Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    CryptoIcon(symbol, size = 26.dp)
-                    Text(symbol, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    listOf("New", "Gainers", "Losers", "24h Vol", "Market Cap").forEach { tabName ->
+                        val selected = tabName == "Market Cap"
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.clickable {
+                                Toast.makeText(context, "$tabName selected", Toast.LENGTH_SHORT).show()
+                            }
+                        ) {
+                            Text(
+                                text = tabName,
+                                color = if (selected) BinanceTextPrimary else BinanceTextSecondary,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                                fontSize = 13.sp
+                            )
+                            if (selected) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(4.dp)
+                                        .clip(CircleShape)
+                                        .background(BinanceGold)
+                                )
+                            }
+                        }
+                    }
                 }
 
-                // Last Price
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val displayPrice = if (lastPrice.startsWith("$")) lastPrice else "$$lastPrice"
-                    Text(displayPrice, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    Text("$percentText%", color = percentColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                }
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Cap / Vol
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.End
+                // Title & Header Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(cap, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    Text(vol, color = BinanceTextSecondary, fontSize = 10.sp)
+                    Text("Crypto", color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Name", color = BinanceTextSecondary, fontSize = 11.sp, modifier = Modifier.weight(1.2f))
+                    Text("Last Price", color = BinanceTextSecondary, fontSize = 11.sp, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
+                    Text("Cap/ Vol", color = BinanceTextSecondary, fontSize = 11.sp, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Market Rows
+                val cryptos = listOf(
+                    Triple("BTC", "$1.26T", "$27.61B"),
+                    Triple("ETH", "$210.53B", "$8.70B"),
+                    Triple("BNB", "$76.88B", "$1.07B"),
+                    Triple("SOL", "$87.41B", "$4.12B"),
+                    Triple("DOGE", "$23.10B", "$1.84B")
+                )
+
+                cryptos.forEachIndexed { index, (symbol, cap, vol) ->
+                    val ticker = tickers[symbol + "USDT"]
+                    val lastPrice = ticker?.lastPrice ?: when (symbol) {
+                        "BTC" -> "63,082.66"
+                        "ETH" -> "1,748.66"
+                        "BNB" -> "571.68"
+                        "SOL" -> "195.00"
+                        "DOGE" -> "0.1624"
+                        else -> "1.00"
+                    }
+                    val changePercent = ticker?.priceChangePercent ?: when (symbol) {
+                        "BTC" -> "+1.79"
+                        "ETH" -> "+0.64"
+                        "BNB" -> "+1.04"
+                        "SOL" -> "+1.25"
+                        "DOGE" -> "+3.40"
+                        else -> "0.00"
+                    }
+                    val isPositive = !changePercent.startsWith("-")
+                    val percentColor = if (isPositive) BinanceGreen else BinanceRed
+                    val percentText = if (isPositive && !changePercent.startsWith("+")) "+$changePercent" else changePercent
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                viewModel.selectPair(symbol + "USDT")
+                                viewModel.showTradingView.value = true
+                            }
+                            .padding(vertical = 11.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Name
+                        Row(
+                            modifier = Modifier.weight(1.2f),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            CryptoIcon(symbol, size = 26.dp)
+                            Text(symbol, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        }
+
+                        // Last Price
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            val displayPrice = if (lastPrice.startsWith("$")) lastPrice else "$$lastPrice"
+                            Text(displayPrice, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("$percentText%", color = percentColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        // Cap / Vol
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            Text(cap, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(vol, color = BinanceTextSecondary, fontSize = 11.sp)
+                        }
+                    }
                 }
             }
-            HorizontalDivider(color = BinanceDivider.copy(alpha = 0.2f), thickness = 0.5.dp)
         }
 
         // 9. Discover Sub-tab bar
@@ -1626,6 +1744,75 @@ fun BinanceMessageIcon(
             end = Offset(endX2, top + rectHeight * 0.65f),
             strokeWidth = strokeWidth,
             cap = androidx.compose.ui.graphics.StrokeCap.Round
+        )
+    }
+}
+
+@Composable
+fun WendysLogo(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(36.dp)
+            .clip(CircleShape)
+            .background(Color(0xFFE22127)), // Wendy's red
+        contentAlignment = Alignment.Center
+    ) {
+        Text("W", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+    }
+}
+
+@Composable
+fun FiatScannerIcon(
+    modifier: Modifier = Modifier,
+    color: Color = BinanceTextSecondary
+) {
+    Canvas(modifier = modifier.size(16.dp)) {
+        val w = size.width
+        val h = size.height
+        val strokeWidth = 1.8.dp.toPx()
+        
+        // Card rounded rectangle frame
+        val rectPath = Path().apply {
+            val left = strokeWidth * 0.5f
+            val top = h * 0.15f
+            val right = w - strokeWidth * 0.5f
+            val bottom = h * 0.85f
+            val corner = 2.dp.toPx()
+            
+            moveTo(left + corner, top)
+            lineTo(right - corner, top)
+            quadraticTo(right, top, right, top + corner)
+            lineTo(right, bottom - corner)
+            quadraticTo(right, bottom, right - corner, bottom)
+            lineTo(left + corner, bottom)
+            quadraticTo(left, bottom, left, bottom - corner)
+            lineTo(left, top + corner)
+            quadraticTo(left, top, left + corner, top)
+            close()
+        }
+        
+        drawPath(
+            path = rectPath,
+            color = color,
+            style = Stroke(width = strokeWidth)
+        )
+        
+        // Credit card magnetic stripe
+        drawLine(
+            color = color,
+            start = Offset(0f, h * 0.40f),
+            end = Offset(w, h * 0.40f),
+            strokeWidth = strokeWidth
+        )
+        
+        // Small card chip on bottom left
+        val chipSize = w * 0.22f
+        drawRect(
+            color = color,
+            topLeft = Offset(w * 0.15f, h * 0.55f),
+            size = androidx.compose.ui.geometry.Size(chipSize, chipSize)
         )
     }
 }

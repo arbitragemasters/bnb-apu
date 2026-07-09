@@ -10,6 +10,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -209,20 +210,21 @@ fun AssetsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(22.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             topTabs.forEach { tabName ->
                 val isSelected = tabName == selectedTopTab
                 Text(
                     text = tabName,
                     color = if (isSelected) Color.White else BinanceTextSecondary,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 14.sp,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    fontSize = if (isSelected) 17.sp else 16.sp,
                     maxLines = 1,
                     softWrap = false,
-                    modifier = Modifier.clickable { selectedTopTab = tabName }
+                    modifier = Modifier
+                        .clickable { selectedTopTab = tabName }
+                        .alignByBaseline()
                 )
             }
         }
@@ -233,7 +235,7 @@ fun AssetsScreen(
                 .fillMaxSize()
                 .weight(1f),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             // Card: Balance Section (Directly on dark background, matching screenshot!)
             item {
@@ -311,35 +313,41 @@ fun AssetsScreen(
                         Text(
                             text = usdtStr,
                             color = Color.White,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 34.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.alignByBaseline()
                         )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                            modifier = Modifier.alignByBaseline()
                         ) {
                             Text(
                                 text = "USDT",
                                 color = Color.White,
-                                fontSize = 16.sp,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Icon(
                                 imageVector = Icons.Filled.ArrowDropDown,
                                 contentDescription = "Dropdown",
                                 tint = BinanceTextSecondary,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    val kshStr = if (isHideBalances) "≈KSh ********" else {
-                        "≈KSh " + String.format(Locale.US, "%,.2f", totalBalanceKsh)
+                    val equivalentStr = if (isHideBalances) "≈$ ********" else {
+                        val formattedVal = if (totalBalanceUsdt < 1.0) {
+                            formatWithCommas(totalBalanceUsdt, maxDecimals = 8, minDecimals = 8)
+                        } else {
+                            formatWithCommas(totalBalanceUsdt, maxDecimals = 2, minDecimals = 2)
+                        }
+                        "≈$$formattedVal"
                     }
                     Text(
-                        text = kshStr,
+                        text = equivalentStr,
                         color = BinanceTextSecondary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
@@ -347,7 +355,7 @@ fun AssetsScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Today's PNL Bar matching screenshot
+                    // Today's PNL Bar matching screenshot (Green & positive)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -361,20 +369,15 @@ fun AssetsScreen(
                             color = BinanceTextSecondary,
                             fontSize = 12.sp
                         )
+                        val pnlPercent = if (totalBalanceUsdt > 0.001011) 0.31 else 0.13
+                        val pnlVal = totalBalanceUsdt * (pnlPercent / 100.0)
+                        val pnlStr = if (isHideBalances) "****" else {
+                            val formattedPnl = formatWithCommas(pnlVal, maxDecimals = 8, minDecimals = 8)
+                            "+$formattedPnl USDT(+$pnlPercent%)"
+                        }
                         Text(
-                            text = if (isHideBalances) "****" else {
-                                if (totalBalanceUsdt < 1.0) {
-                                    val pnlVal = -0.00000018
-                                    val pnlPercent = -0.02
-                                    val formattedPnl = formatWithCommas(pnlVal, maxDecimals = 8, minDecimals = 8)
-                                    "${formattedPnl} USDT(${pnlPercent}%)"
-                                } else {
-                                    val pnlVal = totalBalanceUsdt * -0.0056
-                                    val formattedPnl = formatWithCommas(pnlVal, maxDecimals = 2, minDecimals = 2)
-                                    "${formattedPnl} USDT(-0.56%)"
-                                }
-                            },
-                            color = BinanceRed,
+                            text = pnlStr,
+                            color = BinanceGreen,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -404,9 +407,9 @@ fun AssetsScreen(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
-                                .height(40.dp)
+                                .height(42.dp)
                         ) {
-                            Text("Add Funds", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text("Add Funds", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
 
                         // Send Button (Withdrawal)
@@ -419,9 +422,9 @@ fun AssetsScreen(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
-                                .height(40.dp)
+                                .height(42.dp)
                         ) {
-                            Text("Send", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text("Send", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
 
                         // Transfer Button
@@ -434,19 +437,19 @@ fun AssetsScreen(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
-                                .height(40.dp)
+                                .height(42.dp)
                         ) {
-                            Text("Transfer", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text("Transfer", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
-
-            // Section: Bottom asset toggle tabs (Assets / Account)
+                       // Section: Bottom asset toggle tabs (Assets / Account)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(22.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     listOf("Assets", "Account").forEach { bTab ->
@@ -459,14 +462,15 @@ fun AssetsScreen(
                                 text = bTab,
                                 color = if (isSel) BinanceTextPrimary else BinanceTextSecondary,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                                modifier = Modifier.padding(bottom = 4.dp)
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(bottom = 6.dp)
                             )
                             if (isSel) {
                                 Box(
                                     modifier = Modifier
                                         .width(28.dp)
-                                        .height(2.dp)
+                                        .height(3.dp)
+                                        .clip(RoundedCornerShape(1.5.dp))
                                         .background(BinanceGold)
                                 )
                             }
@@ -480,16 +484,18 @@ fun AssetsScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = "Search",
-                            tint = BinanceTextSecondary,
-                            modifier = Modifier
-                                .size(20.dp)
-                                .clickable {
-                                    showSearchBar = !showSearchBar
-                                }
-                        )
+                        if (selectedBottomTab == "Assets") {
+                            Icon(
+                                imageVector = Icons.Filled.Search,
+                                contentDescription = "Search",
+                                tint = BinanceTextSecondary,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clickable {
+                                        showSearchBar = !showSearchBar
+                                    }
+                            )
+                        }
                         Canvas(
                             modifier = Modifier
                                 .size(18.dp)
@@ -526,10 +532,11 @@ fun AssetsScreen(
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             // Search Bar & Checkbox Row (Conditionally shown when showSearchBar is true!)
-            if (showSearchBar) {
+            if (showSearchBar && selectedBottomTab == "Assets") {
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -579,6 +586,7 @@ fun AssetsScreen(
                             Text("Hide 0 Balance", color = BinanceTextSecondary, fontSize = 10.sp)
                         }
                     }
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
 
@@ -590,122 +598,60 @@ fun AssetsScreen(
                     Triple("Earn", earnTotalUsdt, isHideBalances),
                     Triple("Futures", futuresTotalUsdt, isHideBalances)
                 )
-                items(accountsList) { (name, total, hide) ->
-                    val formattedUsdt = if (hide) {
-                        "******"
-                    } else if (total == 0.0) {
-                        "0.00 USDT"
-                    } else if (total < 1.0) {
-                        "${formatWithCommas(total, maxDecimals = 8, minDecimals = 2)} USDT"
-                    } else {
-                        "${formatWithCommas(total, maxDecimals = 2, minDecimals = 2)} USDT"
-                    }
-
-                    val formattedEquivalent = if (hide) {
-                        "******"
-                    } else if (total == 0.0) {
-                        null
-                    } else if (total < 1.0) {
-                        "≈ $${formatWithCommas(total, maxDecimals = 8, minDecimals = 2)}"
-                    } else {
-                        "≈ $${formatWithCommas(total, maxDecimals = 2, minDecimals = 2)}"
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            Text(
-                                text = name,
-                                color = BinanceTextPrimary,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(top = 1.dp) // Align slightly with text on right
-                            )
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    text = formattedUsdt,
-                                    color = BinanceTextPrimary,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 16.sp
-                                )
-                                if (formattedEquivalent != null) {
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = formattedEquivalent,
-                                        color = BinanceTextSecondary,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Normal
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                if (!isCheckingUpdates && onCheckForUpdates != null) {
-                                    onCheckForUpdates()
-                                }
-                            },
-                        colors = CardDefaults.cardColors(containerColor = BinanceDarkSurface),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(0.5.dp, BinanceDivider)
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(18.dp) // Clean tight vertical spacing!
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.SystemUpdate,
-                                    contentDescription = "System Update",
-                                    tint = BinanceGold,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Column {
-                                    Text(
-                                        text = if (isCheckingUpdates) "Checking for Updates..." else "System Update & Check",
-                                        color = BinanceTextPrimary,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp
-                                    )
-                                    Text(
-                                        text = "Current Version: v$currentVersionName",
-                                        color = BinanceTextSecondary,
-                                        fontSize = 12.sp
-                                    )
-                                }
-                            }
-                            if (isCheckingUpdates) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    color = BinanceGold,
-                                    strokeWidth = 2.dp
-                                )
+                        accountsList.forEach { (name, total, hide) ->
+                            val formattedUsdt = if (hide) {
+                                "******"
+                            } else if (total == 0.0) {
+                                "0.00 USDT"
+                            } else if (total < 1.0) {
+                                "${formatWithCommas(total, maxDecimals = 8, minDecimals = 2)} USDT"
                             } else {
-                                Icon(
-                                    imageVector = Icons.Filled.ChevronRight,
-                                    contentDescription = "Go",
-                                    tint = BinanceTextSecondary,
-                                    modifier = Modifier.size(18.dp)
+                                "${formatWithCommas(total, maxDecimals = 2, minDecimals = 2)} USDT"
+                            }
+
+                            val formattedEquivalent = if (hide) {
+                                "******"
+                            } else if (total == 0.0) {
+                                "≈ $0.00"
+                            } else if (total < 1.0) {
+                                "≈ $${formatWithCommas(total, maxDecimals = 8, minDecimals = 2)}"
+                            } else {
+                                "≈ $${formatWithCommas(total, maxDecimals = 2, minDecimals = 2)}"
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Text(
+                                    text = name,
+                                    color = BinanceTextPrimary,
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 15.sp
                                 )
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text(
+                                        text = formattedUsdt,
+                                        color = BinanceTextPrimary,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 15.sp
+                                    )
+                                    if (formattedEquivalent != null) {
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = formattedEquivalent,
+                                            color = BinanceTextSecondary,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Normal
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -723,7 +669,7 @@ fun AssetsScreen(
                         }
                     }
                 } else {
-                    items(filteredAssets) { asset ->
+                    itemsIndexed(filteredAssets) { index, asset ->
                         val price = when (asset.coinSymbol) {
                             "BTC" -> tickers["BTCUSDT"]?.lastPrice?.toDoubleOrNull() ?: 63736.0
                             "ETH" -> tickers["ETHUSDT"]?.lastPrice?.toDoubleOrNull() ?: 1794.5
@@ -741,12 +687,27 @@ fun AssetsScreen(
                             "Futures" -> asset.futuresBalance
                             else -> asset.spotBalance + asset.fundingBalance
                         }
+                        
+                        if (index == 0) {
+                            HorizontalDivider(
+                                color = BinanceDivider,
+                                thickness = 0.5.dp,
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            )
+                        }
+
                         AssetCoinRow(
                             asset = asset,
                             displayBalance = displayBalance,
                             price = price,
                             isHide = isHideBalances,
                             onTradeClick = { onNavigateToTrade(asset.coinSymbol + "USDT") }
+                        )
+
+                        HorizontalDivider(
+                            color = BinanceDivider,
+                            thickness = 0.5.dp,
+                            modifier = Modifier.padding(top = 6.dp, bottom = 6.dp)
                         )
                     }
                 }
@@ -911,7 +872,7 @@ fun AssetCoinRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp)
+            .padding(vertical = 4.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -990,7 +951,7 @@ fun AssetCoinRow(
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         // Floating PNL row (Left: "Floating PNL", Right: value in red/green)
         Row(
@@ -1041,7 +1002,7 @@ fun AssetCoinRow(
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         // Action Buttons row (Aligned right)
         Row(
@@ -1075,6 +1036,7 @@ fun AssetCoinRow(
                 }
             }
         }
+
     }
 }
 

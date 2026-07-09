@@ -78,6 +78,13 @@ fun MainAppContainer() {
     val viewModel: CryptoViewModel = viewModel()
     val context = LocalContext.current
 
+    var isSplashActive by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(2000)
+        isSplashActive = false
+    }
+
     // Active screen navigation tab: "Home", "Deposit", "Scan", "Pay", "Assets"
     var activeTab by remember { mutableStateOf("Assets") } // Start on Assets tab to show the replica wallet directly!
 
@@ -169,10 +176,13 @@ fun MainAppContainer() {
     var isWithdrawalFullFlow by remember { mutableStateOf(false) }
     var isDepositFullFlow by remember { mutableStateOf(false) }
 
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BinanceDarkBg),
+    if (isSplashActive) {
+        BinanceSplashScreen()
+    } else {
+        Scaffold(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BinanceDarkBg),
         bottomBar = {
             if (!isWithdrawalFullFlow && !isDepositFullFlow && activeTab != "Scan") {
                 Column {
@@ -548,6 +558,7 @@ fun MainAppContainer() {
         }
     }
 }
+}
 
 @Composable
 fun BottomBarCustomIcon(name: String, itemColor: Color, isSelected: Boolean) {
@@ -901,6 +912,73 @@ fun installApk(context: Context, apkFile: File) {
             e2.printStackTrace()
             Toast.makeText(context, "Installation trigger failed. Please launch APK manually from files.", Toast.LENGTH_LONG).show()
         }
+    }
+}
+
+@Composable
+fun BinanceSplashScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0B0E11)), // Deep black/dark background matching the screenshot!
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // High-fidelity vector Binance Logo
+            Canvas(modifier = Modifier.size(80.dp)) {
+                val cx = size.width / 2f
+                val cy = size.height / 2f
+                val L = size.width / 2f
+                
+                // Center solid diamond
+                val centerPath = Path().apply {
+                    moveTo(cx, cy - 0.24f * L)
+                    lineTo(cx + 0.24f * L, cy)
+                    lineTo(cx, cy + 0.24f * L)
+                    lineTo(cx - 0.24f * L, cy)
+                    close()
+                }
+                drawPath(path = centerPath, color = BinanceGold)
+                
+                // Draw 4 outer chevrons/wings
+                // 0 deg: Top wing
+                drawChevron(this, cx, cy, L, 0f)
+                // 90 deg: Right wing
+                drawChevron(this, cx, cy, L, 90f)
+                // 180 deg: Bottom wing
+                drawChevron(this, cx, cy, L, 180f)
+                // 270 deg: Left wing
+                drawChevron(this, cx, cy, L, 270f)
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            Text(
+                text = "BINANCE",
+                color = BinanceGold,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 4.sp
+            )
+        }
+    }
+}
+
+private fun drawChevron(drawScope: androidx.compose.ui.graphics.drawscope.DrawScope, cx: Float, cy: Float, L: Float, rotationDegrees: Float) {
+    drawScope.rotate(rotationDegrees, pivot = Offset(cx, cy)) {
+        val path = Path().apply {
+            moveTo(cx, cy - L)
+            lineTo(cx + 0.45f * L, cy - 0.55f * L)
+            lineTo(cx + 0.22f * L, cy - 0.55f * L)
+            lineTo(cx, cy - 0.77f * L)
+            lineTo(cx - 0.22f * L, cy - 0.55f * L)
+            lineTo(cx - 0.45f * L, cy - 0.55f * L)
+            close()
+        }
+        drawPath(path = path, color = BinanceGold)
     }
 }
 
