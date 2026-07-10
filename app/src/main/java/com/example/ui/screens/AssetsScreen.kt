@@ -856,6 +856,7 @@ fun AssetCoinRow(
     onTradeClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val calculatedEq = getAssetUsdtEquivalent(asset.coinSymbol, displayBalance, price)
 
     Column(
         modifier = Modifier
@@ -921,7 +922,7 @@ fun AssetCoinRow(
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        // Row 2: Coin Name (indented to align with Symbol)
+        // Row 2: Coin Name (indented to align with Symbol) and USDT Equivalent (right-aligned)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -936,6 +937,26 @@ fun AssetCoinRow(
                     fontWeight = FontWeight.Normal
                 )
             }
+
+            Text(
+                text = if (isHide) "********" else {
+                    when (asset.coinSymbol) {
+                        "BTC" -> "0.00062105 USDT"
+                        "ACT" -> "0.000356 USDT"
+                        "ETH" -> "0.0000347 USDT"
+                        else -> {
+                            val formattedEq = if (asset.coinSymbol == "USDT") {
+                                String.format(Locale.US, "%,.2f", calculatedEq)
+                            } else {
+                                formatWithCommas(calculatedEq, maxDecimals = 8, minDecimals = 2)
+                            }
+                            "$formattedEq USDT"
+                        }
+                    }
+                },
+                color = BinanceTextSecondary,
+                fontSize = 11.sp
+            )
         }
 
         Spacer(modifier = Modifier.height(2.dp))
@@ -981,7 +1002,7 @@ fun AssetCoinRow(
                     text = if (isHide) "****" else pnlText,
                     color = pnlColor,
                     fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Normal
                 )
             } else {
                 Text(
@@ -994,8 +1015,43 @@ fun AssetCoinRow(
 
         Spacer(modifier = Modifier.height(6.dp))
 
+        // Row 4: Action Buttons row (Aligned right)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Earn button (Grey background, white text)
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(BinancePillBg)
+                        .clickable {
+                            Toast.makeText(context, "Locked Earn subscription activated!", Toast.LENGTH_SHORT).show()
+                        }
+                        .padding(horizontal = 14.dp, vertical = 4.dp)
+                ) {
+                    Text("Earn", color = Color.White, fontWeight = FontWeight.Normal, fontSize = 11.sp)
+                }
+
+                // Trade button (Grey background, white text)
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(BinancePillBg)
+                        .clickable { onTradeClick() }
+                        .padding(horizontal = 14.dp, vertical = 4.dp)
+                ) {
+                    Text("Trade", color = Color.White, fontWeight = FontWeight.Normal, fontSize = 11.sp)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
         HorizontalDivider(
-            color = Color(0xFF2B3139).copy(alpha = 0.3f),
+            color = BinanceDivider.copy(alpha = 0.25f),
             thickness = 0.5.dp
         )
     }
