@@ -313,7 +313,7 @@ fun AssetsScreen(
                         Text(
                             text = usdtStr,
                             color = Color.White,
-                            fontSize = 34.sp,
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.alignByBaseline()
                         )
@@ -324,19 +324,19 @@ fun AssetsScreen(
                             Text(
                                 text = "USDT",
                                 color = Color.White,
-                                fontSize = 15.sp,
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Icon(
                                 imageVector = Icons.Filled.ArrowDropDown,
                                 contentDescription = "Dropdown",
                                 tint = BinanceTextSecondary,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(14.dp)
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
 
                     val equivalentStr = if (isHideBalances) "≈$ ********" else {
                         val formattedVal = if (totalBalanceUsdt < 1.0) {
@@ -349,11 +349,11 @@ fun AssetsScreen(
                     Text(
                         text = equivalentStr,
                         color = BinanceTextSecondary,
-                        fontSize = 13.sp,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     // Today's PNL Bar matching screenshot (Green & positive)
                     Row(
@@ -367,7 +367,7 @@ fun AssetsScreen(
                         Text(
                             text = "Today's PNL",
                             color = BinanceTextSecondary,
-                            fontSize = 12.sp
+                            fontSize = 11.sp
                         )
                         val pnlPercent = if (totalBalanceUsdt > 0.001011) 0.31 else 0.13
                         val pnlVal = totalBalanceUsdt * (pnlPercent / 100.0)
@@ -378,7 +378,7 @@ fun AssetsScreen(
                         Text(
                             text = pnlStr,
                             color = BinanceGreen,
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
 
@@ -386,11 +386,11 @@ fun AssetsScreen(
                             imageVector = Icons.Filled.ChevronRight,
                             contentDescription = "Detail",
                             tint = BinanceTextSecondary,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(12.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     // Three beautiful main wallet buttons ("Add Funds", "Send", "Transfer")
                     Row(
@@ -407,9 +407,10 @@ fun AssetsScreen(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
-                                .height(42.dp)
+                                .height(34.dp),
+                            contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text("Add Funds", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Add Funds", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
 
                         // Send Button (Withdrawal)
@@ -422,9 +423,10 @@ fun AssetsScreen(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
-                                .height(42.dp)
+                                .height(34.dp),
+                            contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text("Send", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Send", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
 
                         // Transfer Button
@@ -437,13 +439,14 @@ fun AssetsScreen(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
-                                .height(42.dp)
+                                .height(34.dp),
+                            contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text("Transfer", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Transfer", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
             }
                        // Section: Bottom asset toggle tabs (Assets / Account)
             item {
@@ -688,26 +691,12 @@ fun AssetsScreen(
                             else -> asset.spotBalance + asset.fundingBalance
                         }
                         
-                        if (index == 0) {
-                            HorizontalDivider(
-                                color = BinanceDivider,
-                                thickness = 0.5.dp,
-                                modifier = Modifier.padding(bottom = 6.dp)
-                            )
-                        }
-
                         AssetCoinRow(
                             asset = asset,
                             displayBalance = displayBalance,
                             price = price,
                             isHide = isHideBalances,
                             onTradeClick = { onNavigateToTrade(asset.coinSymbol + "USDT") }
-                        )
-
-                        HorizontalDivider(
-                            color = BinanceDivider,
-                            thickness = 0.5.dp,
-                            modifier = Modifier.padding(top = 6.dp, bottom = 6.dp)
                         )
                     }
                 }
@@ -867,124 +856,125 @@ fun AssetCoinRow(
     onTradeClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val calculatedEq = getAssetUsdtEquivalent(asset.coinSymbol, displayBalance, price)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onTradeClick() }
             .padding(vertical = 4.dp)
     ) {
+        // Row 1: Logo, Coin Symbol, and Main Balance (all on the same horizontal line!)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                CryptoIcon(symbol = asset.coinSymbol, size = 32.dp)
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(
-                            text = asset.coinSymbol,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
-                        )
-                        // Add tag for certain coins like Earn or Monitoring badge matching the screenshot!
-                        if (asset.coinSymbol == "ACT") {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(3.dp))
-                                    .background(Color(0xFF2F1D2C))
-                                    .border(0.5.dp, Color(0xFF4C273C), shape = RoundedCornerShape(3.dp))
-                                    .padding(horizontal = 4.dp, vertical = 2.dp)
-                             ) {
-                                Text(
-                                    text = "Monitoring",
-                                    color = Color(0xFFEA5B80),
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                CryptoIcon(symbol = asset.coinSymbol, size = 28.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = asset.coinSymbol,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                    // Add tag for certain coins like Earn or Monitoring badge matching the screenshot!
+                    if (asset.coinSymbol == "ACT") {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(Color(0xFF2F1D2C))
+                                .border(0.5.dp, Color(0xFF4C273C), shape = RoundedCornerShape(3.dp))
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "Monitoring",
+                                color = Color(0xFFEA5B80),
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
-                    Text(
-                        text = asset.coinName,
-                        color = BinanceTextSecondary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
-                    )
                 }
             }
 
-            // Balances Column
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
+            // Balance Value
+            Text(
+                text = if (isHide) "********" else {
+                    if (asset.coinSymbol == "BTC" && displayBalance == 0.00000001) "0.00000001"
+                    else if (asset.coinSymbol == "ACT" && displayBalance == 0.04) "0.04"
+                    else if (asset.coinSymbol == "ETH" && displayBalance == 0.00000002) "0.00000002"
+                    else if (asset.coinSymbol == "USDT") String.format(Locale.US, "%,.2f", displayBalance)
+                    else formatWithCommas(displayBalance, maxDecimals = 8, minDecimals = 2)
+                },
+                color = Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(2.dp))
+
+        // Row 2: Coin Name (indented to align with Symbol)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row {
+                Spacer(modifier = Modifier.width(38.dp)) // 28.dp icon + 10.dp spacing
                 Text(
-                    text = if (isHide) "********" else {
-                        if (asset.coinSymbol == "BTC" && displayBalance == 0.00000001) "0.00000001"
-                        else if (asset.coinSymbol == "ACT" && displayBalance == 0.04) "0.04"
-                        else if (asset.coinSymbol == "ETH" && displayBalance == 0.00000002) "0.00000002"
-                        else if (asset.coinSymbol == "USDT") String.format(Locale.US, "%,.2f", displayBalance)
-                        else formatWithCommas(displayBalance, maxDecimals = 8, minDecimals = 2)
-                    },
-                    color = Color.White,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = if (isHide) "********" else {
-                        val formattedEq = if (asset.coinSymbol == "USDT") {
-                            String.format(Locale.US, "%,.2f", calculatedEq)
-                        } else {
-                            formatWithCommas(calculatedEq, maxDecimals = 8, minDecimals = 2)
-                        }
-                        "≈$formattedEq USDT"
-                    },
+                    text = asset.coinName,
                     color = BinanceTextSecondary,
-                    fontSize = 11.sp
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Normal
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(2.dp))
 
-        // Floating PNL row (Left: "Floating PNL", Right: value in red/green)
+        // Row 3: Floating PNL row (Left: "Floating PNL", Right: value in red/green)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             val pnlPercent = when (asset.coinSymbol) {
-                "BTC" -> -25.10
+                "BTC" -> -27.02
                 "ACT" -> 0.0
-                "ETH" -> -0.43
+                "ETH" -> -3.60
                 else -> 0.0
             }
             val pnlVal = when (asset.coinSymbol) {
-                "BTC" -> -0.00021362
-                "ACT" -> 0.0003656
-                "ETH" -> -0.00000016
+                "BTC" -> -0.00022995
+                "ACT" -> 0.000356
+                "ETH" -> -0.0000013
                 else -> 0.0
             }
 
-            Text(
-                text = "Floating PNL",
-                color = BinanceTextSecondary,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium
-            )
+            Row {
+                Spacer(modifier = Modifier.width(38.dp))
+                Text(
+                    text = "Floating PNL",
+                    color = BinanceTextSecondary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Normal
+                )
+            }
 
             if (pnlPercent != 0.0 || pnlVal != 0.0) {
                 val pnlColor = if (pnlVal >= 0) BinanceGreen else BinanceRed
                 val pnlText = when (asset.coinSymbol) {
-                    "BTC" -> "-0.00021362 USDT(-25.10%)"
-                    "ACT" -> "+0.0003656 USDT(--%)"
-                    "ETH" -> "-0.00000016 USDT(-0.43%)"
+                    "BTC" -> "-0.00022995 USDT(-27.02%)"
+                    "ACT" -> "+0.000356 USDT(--%)"
+                    "ETH" -> "-0.0000013 USDT(-3.60%)"
                     else -> "0.00 USDT(0.00%)"
                 }
                 Text(
@@ -1002,41 +992,12 @@ fun AssetCoinRow(
             }
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
-        // Action Buttons row (Aligned right)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                // Earn button (Grey background, white text)
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(BinancePillBg)
-                        .clickable {
-                            Toast.makeText(context, "Locked Earn subscription activated!", Toast.LENGTH_SHORT).show()
-                        }
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
-                ) {
-                    Text("Earn", color = Color.White, fontWeight = FontWeight.Medium, fontSize = 11.sp)
-                }
-
-                // Trade button (Grey background, white text)
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(BinancePillBg)
-                        .clickable { onTradeClick() }
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
-                ) {
-                    Text("Trade", color = Color.White, fontWeight = FontWeight.Medium, fontSize = 11.sp)
-                }
-            }
-        }
-
+        HorizontalDivider(
+            color = Color(0xFF2B3139).copy(alpha = 0.3f),
+            thickness = 0.5.dp
+        )
     }
 }
 

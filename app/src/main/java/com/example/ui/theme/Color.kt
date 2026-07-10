@@ -4,8 +4,8 @@ import androidx.compose.ui.graphics.Color
 
 val BinanceGold = Color(0xFFFCD535) // Richer Binance gold
 val BinanceGoldLight = Color(0xFFFCE15F)
-val BinanceDarkBg = Color(0xFF181A20) // Slate-charcoal main background
-val BinanceDarkSurface = Color(0xFF1E2329) // Surface card base
+val BinanceDarkBg = Color(0xFF181A20) // Deep dark slate-charcoal background
+val BinanceDarkSurface = Color(0xFF202630) // Ashy, lighter card container base that stands out against the dark background
 val BinanceCardBg = Color(0xFF2B3139) // Secondary container
 val BinancePillBg = Color(0xFF383F4B)
 

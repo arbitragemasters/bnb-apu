@@ -27,6 +27,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asComposePath
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.core.graphics.PathParser
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.platform.LocalContext
@@ -927,34 +930,25 @@ fun BinanceSplashScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // High-fidelity vector Binance Logo
-            Canvas(modifier = Modifier.size(80.dp)) {
-                val cx = size.width / 2f
-                val cy = size.height / 2f
-                val L = size.width / 2f
-                
-                // Center solid diamond
-                val centerPath = Path().apply {
-                    moveTo(cx, cy - 0.24f * L)
-                    lineTo(cx + 0.24f * L, cy)
-                    lineTo(cx, cy + 0.24f * L)
-                    lineTo(cx - 0.24f * L, cy)
-                    close()
+            // Official Pixel-Perfect Binance Logo (using the exact untweaked official SVG path)
+            Canvas(modifier = Modifier.size(100.dp)) {
+                val pathData = "M12.116 14.404L16 10.52l3.886 3.886 2.26-2.26L16 6l-6.144 6.144 2.26 2.26zM6 16l2.26-2.26L10.52 16l-2.26 2.26L6 16zm6.116 1.596L16 21.48l3.886-3.886 2.26 2.259L16 26l-6.144-6.144-.003-.003 2.263-2.257zM21.48 16l2.26-2.26L26 16l-2.26 2.26L21.48 16zm-3.188-.002h.002V16L16 18.294l-2.291-2.29-.004-.004.004-.003.401-.402.195-.195L16 13.706l2.293 2.293z"
+                val path = try {
+                    PathParser.createPathFromPathData(pathData).asComposePath()
+                } catch (e: Exception) {
+                    Path()
                 }
-                drawPath(path = centerPath, color = BinanceGold)
                 
-                // Draw 4 outer chevrons/wings
-                // 0 deg: Top wing
-                drawChevron(this, cx, cy, L, 0f)
-                // 90 deg: Right wing
-                drawChevron(this, cx, cy, L, 90f)
-                // 180 deg: Bottom wing
-                drawChevron(this, cx, cy, L, 180f)
-                // 270 deg: Left wing
-                drawChevron(this, cx, cy, L, 270f)
+                // Scale from 32x32 design space to current canvas size
+                val scaleX = size.width / 32f
+                val scaleY = size.height / 32f
+                
+                scale(scaleX, scaleY, pivot = Offset.Zero) {
+                    drawPath(path, color = BinanceGold)
+                }
             }
             
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
             Text(
                 text = "BINANCE",
@@ -964,21 +958,6 @@ fun BinanceSplashScreen() {
                 letterSpacing = 4.sp
             )
         }
-    }
-}
-
-private fun drawChevron(drawScope: androidx.compose.ui.graphics.drawscope.DrawScope, cx: Float, cy: Float, L: Float, rotationDegrees: Float) {
-    drawScope.rotate(rotationDegrees, pivot = Offset(cx, cy)) {
-        val path = Path().apply {
-            moveTo(cx, cy - L)
-            lineTo(cx + 0.45f * L, cy - 0.55f * L)
-            lineTo(cx + 0.22f * L, cy - 0.55f * L)
-            lineTo(cx, cy - 0.77f * L)
-            lineTo(cx - 0.22f * L, cy - 0.55f * L)
-            lineTo(cx - 0.45f * L, cy - 0.55f * L)
-            close()
-        }
-        drawPath(path = path, color = BinanceGold)
     }
 }
 

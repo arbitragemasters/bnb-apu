@@ -70,7 +70,7 @@ fun HomeScreen(
     // Whenever pair or ticker price changes, prefill input if empty or limit order is selected
     LaunchedEffect(selectedPair, currentTicker) {
         if (currentTicker != null && (tradePriceInput.isEmpty() || orderType == "Market")) {
-            tradePriceInput = currentTicker.lastPrice
+            tradePriceInput = formatCryptoPrice(currentTicker.lastPrice).replace(",", "")
         }
     }
 
@@ -143,7 +143,7 @@ fun HomeScreen(
                     val changeColor = if (change >= 0) BinanceGreen else BinanceRed
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = currentTicker.lastPrice,
+                            text = "$${formatCryptoPrice(currentTicker.lastPrice)}",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = changeColor
@@ -203,7 +203,7 @@ fun HomeScreen(
                             val changePct = ticker.priceChangePercent.toDoubleOrNull() ?: 0.0
                             val col = if (changePct >= 0) BinanceGreen else BinanceRed
                             Text(
-                                text = ticker.lastPrice,
+                                text = "$${formatCryptoPrice(ticker.lastPrice)}",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = BinanceTextPrimary
@@ -1054,7 +1054,7 @@ fun HomeLandingView(
             Spacer(modifier = Modifier.height(16.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = BinanceCardBg),
+                colors = CardDefaults.cardColors(containerColor = BinanceDarkSurface),
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Column(
@@ -1243,7 +1243,7 @@ fun HomeLandingView(
                 // Left Card: UAH Card
                 Card(
                     modifier = Modifier.weight(1f).aspectRatio(0.98f),
-                    colors = CardDefaults.cardColors(containerColor = BinanceCardBg),
+                    colors = CardDefaults.cardColors(containerColor = BinanceDarkSurface),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Column(
@@ -1319,7 +1319,7 @@ fun HomeLandingView(
 
                 Card(
                     modifier = Modifier.weight(1f).aspectRatio(0.98f),
-                    colors = CardDefaults.cardColors(containerColor = BinanceCardBg),
+                    colors = CardDefaults.cardColors(containerColor = BinanceDarkSurface),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Column(
@@ -1332,7 +1332,7 @@ fun HomeLandingView(
                         }
 
                         Column {
-                            Text(bnbPrice, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 21.sp)
+                            Text("$${formatCryptoPrice(bnbPrice)}", color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 21.sp)
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(bnbChangeText, color = bnbColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
@@ -1347,136 +1347,143 @@ fun HomeLandingView(
             }
         }
 
-        // 6. Tabs, Header & Coin Market List directly on screen background
+        // 6. Tabs, Header & Coin Market List grouped inside a modern dark box/card
         item {
             Spacer(modifier = Modifier.height(18.dp))
-            Column(
-                modifier = Modifier.fillMaxWidth()
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = BinanceDarkSurface),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                // Tabs row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(14.dp)
                 ) {
-                    listOf("New", "Gainers", "Losers", "24h Vol", "Market Cap").forEach { tabName ->
-                        val selected = tabName == "Market Cap"
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.clickable {
-                                Toast.makeText(context, "$tabName selected", Toast.LENGTH_SHORT).show()
-                            }
-                        ) {
-                            Text(
-                                text = tabName,
-                                color = if (selected) BinanceTextPrimary else BinanceTextSecondary,
-                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                                fontSize = 13.sp
-                            )
-                            if (selected) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .size(4.dp)
-                                        .clip(CircleShape)
-                                        .background(BinanceGold)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Title & Header Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Crypto", color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Name", color = BinanceTextSecondary, fontSize = 11.sp, modifier = Modifier.weight(1.2f))
-                    Text("Last Price", color = BinanceTextSecondary, fontSize = 11.sp, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
-                    Text("Cap/ Vol", color = BinanceTextSecondary, fontSize = 11.sp, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
-                }
-                Spacer(modifier = Modifier.height(6.dp))
-
-                // Market Rows
-                val cryptos = listOf(
-                    Triple("BTC", "$1.26T", "$27.61B"),
-                    Triple("ETH", "$210.53B", "$8.70B"),
-                    Triple("BNB", "$76.88B", "$1.07B"),
-                    Triple("SOL", "$87.41B", "$4.12B"),
-                    Triple("DOGE", "$23.10B", "$1.84B")
-                )
-
-                cryptos.forEachIndexed { index, (symbol, cap, vol) ->
-                    val ticker = tickers[symbol + "USDT"]
-                    val lastPrice = ticker?.lastPrice ?: when (symbol) {
-                        "BTC" -> "63,082.66"
-                        "ETH" -> "1,748.66"
-                        "BNB" -> "571.68"
-                        "SOL" -> "195.00"
-                        "DOGE" -> "0.1624"
-                        else -> "1.00"
-                    }
-                    val changePercent = ticker?.priceChangePercent ?: when (symbol) {
-                        "BTC" -> "+1.79"
-                        "ETH" -> "+0.64"
-                        "BNB" -> "+1.04"
-                        "SOL" -> "+1.25"
-                        "DOGE" -> "+3.40"
-                        else -> "0.00"
-                    }
-                    val isPositive = !changePercent.startsWith("-")
-                    val percentColor = if (isPositive) BinanceGreen else BinanceRed
-                    val percentText = if (isPositive && !changePercent.startsWith("+")) "+$changePercent" else changePercent
-
+                    // Tabs row
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                viewModel.selectPair(symbol + "USDT")
-                                viewModel.showTradingView.value = true
-                            }
-                            .padding(vertical = 11.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Name
+                        listOf("New", "Gainers", "Losers", "24h Vol", "Market Cap").forEach { tabName ->
+                            val selected = tabName == "Market Cap"
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.clickable {
+                                    Toast.makeText(context, "$tabName selected", Toast.LENGTH_SHORT).show()
+                                }
+                            ) {
+                                Text(
+                                    text = tabName,
+                                    color = if (selected) BinanceTextPrimary else BinanceTextSecondary,
+                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 13.sp
+                                )
+                                if (selected) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .size(4.dp)
+                                            .clip(CircleShape)
+                                            .background(BinanceGold)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Title & Header Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Crypto", color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Name", color = BinanceTextSecondary, fontSize = 11.sp, modifier = Modifier.weight(1.2f))
+                        Text("Last Price", color = BinanceTextSecondary, fontSize = 11.sp, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
+                        Text("Cap/ Vol", color = BinanceTextSecondary, fontSize = 11.sp, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // Market Rows
+                    val cryptos = listOf(
+                        Triple("BTC", "$1.26T", "$27.61B"),
+                        Triple("ETH", "$210.53B", "$8.70B"),
+                        Triple("BNB", "$76.88B", "$1.07B"),
+                        Triple("SOL", "$87.41B", "$4.12B"),
+                        Triple("DOGE", "$23.10B", "$1.84B")
+                    )
+
+                    cryptos.forEachIndexed { index, (symbol, cap, vol) ->
+                        val ticker = tickers[symbol + "USDT"]
+                        val lastPrice = ticker?.lastPrice ?: when (symbol) {
+                            "BTC" -> "63,082.66"
+                            "ETH" -> "1,748.66"
+                            "BNB" -> "571.68"
+                            "SOL" -> "195.00"
+                            "DOGE" -> "0.1624"
+                            else -> "1.00"
+                        }
+                        val changePercent = ticker?.priceChangePercent ?: when (symbol) {
+                            "BTC" -> "+1.79"
+                            "ETH" -> "+0.64"
+                            "BNB" -> "+1.04"
+                            "SOL" -> "+1.25"
+                            "DOGE" -> "+3.40"
+                            else -> "0.00"
+                        }
+                        val isPositive = !changePercent.startsWith("-")
+                        val percentColor = if (isPositive) BinanceGreen else BinanceRed
+                        val percentText = if (isPositive && !changePercent.startsWith("+")) "+$changePercent" else changePercent
+
                         Row(
-                            modifier = Modifier.weight(1.2f),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.selectPair(symbol + "USDT")
+                                    viewModel.showTradingView.value = true
+                                }
+                                .padding(vertical = 11.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            CryptoIcon(symbol, size = 26.dp)
-                            Text(symbol, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                        }
+                            // Name
+                            Row(
+                                modifier = Modifier.weight(1.2f),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                CryptoIcon(symbol, size = 26.dp)
+                                Text(symbol, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            }
 
-                        // Last Price
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.End
-                        ) {
-                            val displayPrice = if (lastPrice.startsWith("$")) lastPrice else "$$lastPrice"
-                            Text(displayPrice, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text("$percentText%", color = percentColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        }
+                            // Last Price
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.End
+                            ) {
+                                val formattedPrice = formatCryptoPrice(lastPrice)
+                                val displayPrice = if (formattedPrice.startsWith("$")) formattedPrice else "$$formattedPrice"
+                                Text(displayPrice, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text("$percentText%", color = percentColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
 
-                        // Cap / Vol
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.End
-                        ) {
-                            Text(cap, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(vol, color = BinanceTextSecondary, fontSize = 11.sp)
+                            // Cap / Vol
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.End
+                            ) {
+                                Text(cap, color = BinanceTextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(vol, color = BinanceTextSecondary, fontSize = 11.sp)
+                            }
                         }
                     }
                 }
@@ -1814,6 +1821,16 @@ fun FiatScannerIcon(
             topLeft = Offset(w * 0.15f, h * 0.55f),
             size = androidx.compose.ui.geometry.Size(chipSize, chipSize)
         )
+    }
+}
+
+fun formatCryptoPrice(priceStr: String): String {
+    val cleanPrice = priceStr.replace("$", "").replace(",", "").trim()
+    val value = cleanPrice.toDoubleOrNull() ?: return priceStr
+    return if (value >= 1.0) {
+        formatWithCommas(value, maxDecimals = 2, minDecimals = 2)
+    } else {
+        formatWithCommas(value, maxDecimals = 4, minDecimals = 4)
     }
 }
 
